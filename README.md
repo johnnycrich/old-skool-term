@@ -7,11 +7,9 @@ Instantiate:
 
 <code>
 $(document).ready(function() {
-  //....
   
     Console.init();
   
-  //....
 });
 </code>
 
