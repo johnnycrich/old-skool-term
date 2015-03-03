@@ -1,130 +1,165 @@
- //               _                                                                     .         
- //     .    __.  /      , __   , __   ,    .         ___    __.  , __     ____   __.   |     ___ 
- //     \  .'   \ |,---. |'  `. |'  `. |    `       .'   ` .'   \ |'  `.  (     .'   \  |   .'   `
- //     |  |    | |'   ` |    | |    | |    |       |      |    | |    |  `--.  |    |  |   |----'
- // /`  |   `._.' /    | /    | /    |  `---|.       `._.'  `._.' /    | \___.'  `._.' /\__ `.___,
- // \___/`                              \___/                                                     
+//               _                                                                     .         
+//     .    __.  /      , __   , __   ,    .         ___    __.  , __     ____   __.   |     ___ 
+//     \  .'   \ |,---. |'  `. |'  `. |    `       .'   ` .'   \ |'  `.  (     .'   \  |   .'   `
+//     |  |    | |'   ` |    | |    | |    |       |      |    | |    |  `--.  |    |  |   |----'
+// /`  |   `._.' /    | /    | /    |  `---|.       `._.'  `._.' /    | \___.'  `._.' /\__ `.___,
+// \___/`                              \___/                                                     
+// A basic JS/jQuery-driven in-window javascript console in the vein of iTerm/OSX Terminal.
 
-var Console = Console || {};
+var Console = function() {
+  
+  var TILDE_KEY = 96;
+  var ENTER_KEY = 13;
+  var LEFT_KEY = 39;
+  var RIGHT_KEY = 37;
+  var UP_KEY = 38;
+  var DOWN_KEY = 40;
+  var BACKSPACE_KEY = 8;
 
-Console.enterKey = 13;
-Console.leftKey = 39;
-Console.rightKey = 37;
-Console.backspaceKey = 8;
+  var scrollback = [];
+  var scrollbackIndex = 0;
 
-Console.init = function() {
+  var mainSelector;
+  var textBoxSelector;
 
-   $(window).keypress(function() {
-      if ( event.which == 96 ) {
-         event.preventDefault();
-         $('#console').toggleClass("open");
+  this.generate = function(begin) {
 
-         if($("#console").hasClass("open"))
-            $('#console_text').focus();
-      }
-   });
+     try {
 
-   $('body').prepend($('<textarea />', {id: "console_text"}));
-   $('body').prepend($('<div />', {id: "console"}));
+       var result = eval(textBoxSelector.val());
 
-   Console.generate(true);
-   Console.listeners();
+       mainSelector.append(function() {
+           if(result !== undefined) {
+              return $("<div class='result'>" + result + "</div>")
+                      .click(function() {
+                          self.displayInput($(this).text(), true);
 
-};
+                          textBoxSelector.val($(this).text());
+                          textBoxSelector.focus();
+                      });
+           }
+       });
+     
+     } 
+     catch(err) {
 
-Console.generate = function(begin){
+       mainSelector.append($("<div class='error'>" + err + "</div>"));
+     
+     }
 
-   if(begin !== undefined || !begin)
-   {
-      // $('#console').html(
-      //  "               _                                                                     .         <br />" +
-      //  "     .    __.  /      , __   , __   ,    .         ___    __.  , __     ____   __.   |     ___ <br />" +
-      //  "     \  .'   \ |,---. |'  `. |'  `. |    `       .'   ` .'   \ |'  `.  (     .'   \  |   .'   `<br />" +
-      //  "     |  |    | |'   ` |    | |    | |    |       |      |    | |    |  `--.  |    |  |   |----'<br />" +
-      //  " /`  |   `._.' /    | /    | /    |  `---|.       `._.'  `._.' /    | \___.'  `._.' /\__ `.___,<br />" +
-      //  " \___/`                              \___/                                                     ".replace(/\s/g, '&nbsp;')
-      // );
-   }
+     $('span.cursor').hide();
 
-   try {
-     var result = undefined;
+     var newLine = $("<div/>", {
+                       class: "bash"
+                   });
+     var newCursor = $("<span/>", {
+                           class: "cursor"
+                       });
 
-     // if($('#console_text').val().indexOf('var') != -1)
-     //  this[$('#console_text').val()]
+     $(newLine).prepend("johnnybash$");
+     $(newCursor).text('_');
 
-     result = eval($('#console_text').val());
+     mainSelector.append( $("<div/>") )
+     .append( newLine )
+     .append( $("<div/>", {
+                class: "line"
+              })
+     )
+     .append( newCursor );
 
-     $("#console").append(function() {
-         if(result != undefined) {
-            return $("<div class='result'>" + result + "</div>")
-                    .click(function() {
-                        Console.displayInput($(this).text(), true);
-                    });
-         }
-     });
-   } 
-   catch(err) {
-     $("#console").append($("<div class='error'>" + err + "</div>"));
-   }
+     if(textBoxSelector.val().length > 0)
+     {
+      scrollback.push(textBoxSelector.val());
+      scrollbackIndex = scrollback.length;
+     }
 
-   $('span.cursor').hide();
+     textBoxSelector.val('');
 
-   var newLine = $("<div/>", {
-                     class: "bash"
-                 });
-   var newCursor = $("<span/>", {
-                         class: "cursor"
-                     });
+  };
 
-   $(newLine).prepend("johnnybash$");
-   $(newCursor).text('_');
-
-   $("#console")
-   .append(
-     $("<div/>")
-   )
-   .append(
-     newLine
-   )
-   .append(
-     $("<div/>", {
-         class: "line"
-     })
-   )
-   .append(
-     newCursor
-   );
-
-   $('#console_text').val('');
-
-};
-
-Console.displayInput = function(inputText, append) {
+  this.displayInput = function(inputText, append) {
+    
     if(append === undefined || !append)
         $('#console .line:last').text(inputText);
     else
         $('#console .line:last').text($('#console .line:last').text() + inputText);
-};
 
-Console.listeners = function() {
+  };
 
-    $('#console_text')
-    .on('input propertychange paste', function() {
-        Console.displayInput($('#console_text').val());
-    })
-    .keydown(function() {
-       // alert( event.which );
-      if ( event.which == Console.leftKey && (parseInt($('#console .cursor').css('left').replace('px', '')) < -10) )
-         $('#console .cursor').css('left', '+=8px');
-      else if ( event.which == Console.rightKey )
-         $('#console .cursor').css('left', '-=8px');
-      else if ( event.which == Console.backspaceKey )
-        Console.displayInput($('#console_text').val());
-      else if ( event.which == Console.enterKey )
-         Console.generate();
-    });
+  this.scrollbackGo = function(back) {
 
-    $('#console').focus(moveToEnd).click(moveToEnd);
-    $('#console_text').focus();
+    var input = "";
+
+    if(back)
+    {
+      if(scrollbackIndex > 0) scrollbackIndex--;
+      
+      input = scrollback[scrollbackIndex];
+    }
+    else
+    {
+      if(scrollbackIndex < scrollback.length) {
+        scrollbackIndex++;
+        input = scrollback[scrollbackIndex];
+      }
+
+    }
+    
+     self.displayInput(input);
+     textBoxSelector.val(input);
+
+  };
+ 
+  this.listeners = function() {
+
+      textBoxSelector
+      .on('input propertychange paste', function() {
+
+          self.displayInput(textBoxSelector.val());
+
+      })
+      .keydown(function() {
+
+        if ( event.which == LEFT_KEY && (parseInt($('#console .cursor').css('left').replace('px', '')) < -10) )
+           $('#console .cursor').css('left', '+=8px');
+        else if ( event.which == RIGHT_KEY )
+           $('#console .cursor').css('left', '-=8px');
+        else if ( event.which == UP_KEY )
+          self.scrollbackGo(true);
+        else if ( event.which == DOWN_KEY )
+          self.scrollbackGo();
+        else if ( event.which == BACKSPACE_KEY )
+          self.displayInput(textBoxSelector.val());
+        else if ( event.which == ENTER_KEY )
+           self.generate();
+
+      });
+
+      textBoxSelector.focus();
+
+  };
+
+  $('body').prepend($('<textarea />', {id: "console_text"}));
+  $('body').prepend($('<div />', {id: "console"}));
+
+  mainSelector = $('#console');
+  textBoxSelector = $('#console_text');
+
+  $(window).keypress(function() {
+
+    if ( event.which == TILDE_KEY ) {
+       event.preventDefault();
+       mainSelector.toggleClass("open");
+
+       if(mainSelector.hasClass("open"))
+          textBoxSelector.focus();
+    }
+
+  });
+
+  mainSelector.click(function() { textBoxSelector.focus(); });
+
+  this.generate(true);
+  this.listeners();
 
 };

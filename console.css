@@ -1,0 +1,80 @@
+
+
+#console {
+
+  height: 0;
+  width: 100%;
+  top: 100%;
+  color: #00ff00;
+  background-color: rgba(0, 0, 0, 0.6);
+
+  font-family: "Courier New", Courier, monospace;
+  position: absolute;
+  vertical-align: top;
+
+  -webkit-transition: 0.5s ease-in-out;
+  -moz-transition: 0.5s ease-in-out;
+  -o-transition: 0.5s ease-in-out;
+  -ms-transition: 0.5s ease-in-out;
+  transition: 0.5s ease-in-out;
+
+}
+
+#console.open {
+
+  top: 50%;
+  height: 50%;
+
+}
+
+#console .line {
+
+    display: inline-block;
+    position: relative;
+    border: 0;
+    outline: 0;
+
+}
+
+#console .cursor {
+
+    position: relative;
+
+    -webkit-animation: cursor-blink 1s steps(5, start) infinite;
+
+}
+
+#console .bash {
+
+  display: inline-block;
+  padding-right: 20px;
+
+}
+
+#console .error {
+
+  color: red;
+
+}
+
+#console .result {
+
+  color: #00ffff;
+
+}
+#console .result:hover {
+
+  text-decoration: underline;
+  cursor: pointer;
+
+}
+
+#console_text {
+
+  position: absolute;
+  left: -20px;
+  top: -20px;
+  width: 0;
+  height: 0;
+
+}
